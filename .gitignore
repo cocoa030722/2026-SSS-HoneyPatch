@@ -1,0 +1,5 @@
+bin/
+logs/*.log
+tests/__pycache__/
+experiments/results/*.csv
+experiments/results/*.png

@@ -1,0 +1,6 @@
+# 11주차 고정 검증 사례 (수정 금지)
+# expect 값: ok(정상 응답, 포크 없음) / leak(진짜 토큰 노출) / error(오류 응답) / fork_noleak(decoy로 포크, 진짜 토큰 없음)
+case,L,payload,expect_vuln,expect_patch,expect_honey
+normal,4,ABCD,ok,ok,ok
+violation,64,ABCD,leak,error,fork_noleak
+boundary,5,ABCD,ok,error,fork_noleak
