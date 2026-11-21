@@ -20,7 +20,6 @@ import os
 import signal
 import subprocess
 import sys
-import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import client  # noqa: E402
@@ -110,9 +109,10 @@ class Server:
         with open(self.log) as f:
             return f.read().splitlines()
 
-    # 전체 fork 횟수를 돌려준다 ([HP] fork decoy 줄의 개수)
+    # 전체 fork 횟수를 돌려준다 ([DECOY] start 줄의 개수 / decoy의 존재자체가 fork의 증거가 될 수 있으므로)
+    # decoy는 응답을 보내기 전에 start 로그를 기록하므로 클라이언트가 응답을 받은 시점에는 이 로그가 반드시 존재한다
     def fork_count(self):
-        return sum("[HP] fork decoy" in ln for ln in self.log_lines())
+        return sum("[DECOY] start" in ln for ln in self.log_lines())
 
     # 전체 메모리 영역의 크기를 돌려준다
     def arena_size(self):
@@ -154,11 +154,7 @@ def run_case(srv, case, tokens):
     before = srv.fork_count()
 
     # heartbeat 요청 전송 후 응답을 받는다
-    status, data, rtt = client.heartbeat(srv.port, L, payload)
-
-    # target과 client의 race를 고려해 요청 후 횟수를 세기 전에 잠시 대기한다
-    # 환경에 따라 이 시간이 너무 짧으면 fork 기록을 세지 못할 수도 있다
-    time.sleep(0.2)   
+    status, data, rtt = client.heartbeat(srv.port, L, payload) 
 
     # 요청 전, 후 fork 횟수 비교
     forked = srv.fork_count() > before
