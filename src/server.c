@@ -267,6 +267,10 @@ int main(int argc, char **argv)
     if (getenv("HP_FILL"))
         fill_slots();
 
+    #ifdef HONEY
+        hp_init_fake_tokens();
+    #endif
+
     /* TCP 소켓 생성 */
     int lfd = socket(AF_INET, SOCK_STREAM, 0);
 
