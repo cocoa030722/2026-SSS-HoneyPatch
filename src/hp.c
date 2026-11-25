@@ -20,6 +20,9 @@ static int g_log_fd    = -1;
 // 이 프로세스가 decoy라면 1
 static int g_in_decoy  = 0;
 
+static char fake_tokens[NSLOT][TOKEN_LEN + 1];
+static int fake_initialized = 0;
+
 void hp_init(int listen_fd, int log_fd)
 {
     g_listen_fd = listen_fd;
@@ -74,15 +77,16 @@ void random_hex(char *dst, int len)
 /* 공격자 슬롯(keep_slot)을 제외한 모든 세션의 토큰을 같은 길이와 형식의 가짜 값으로 덮어쓴다 */
 void hp_redact(int keep_slot)
 {
-    int count = 0;      // 교체한 비밀의 개수(로그 기록용)
+    int count = 0;
+
     for (int i = 0; i < NSLOT; i++) {
-        // 공격자 슬롯과 빈 슬롯은 건너뛴다
         if (i == keep_slot || A.sess[i].user[0] == '\0')
             continue;
-        // random_hex()를 통해 비밀을 교체한다
-        random_hex(A.sess[i].token, TOKEN_LEN);
+
+        memcpy(A.sess[i].token, fake_tokens[i], TOKEN_LEN);
         count++;
     }
+
     hp_log("[DECOY] redacted %d session(s)", count);
 }
 
@@ -139,4 +143,15 @@ int hp_fork(int conn_fd, int attacker_slot, int L, int P)
     alarm(DECOY_TTL);
     hp_log("[DECOY] start pid=%d slot=%d", (int)getpid(), attacker_slot);
     return HP_DECOY;
+}
+
+void hp_init_fake_tokens(void)
+{
+    if (fake_initialized)
+        return;
+
+    for (int i = 0; i < NSLOT; i++)
+        random_hex(fake_tokens[i], TOKEN_LEN);
+
+    fake_initialized = 1;
 }

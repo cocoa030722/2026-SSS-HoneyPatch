@@ -22,6 +22,7 @@ int  hp_in_decoy(void);
 void hp_redact(int keep_slot);
 void hp_log(const char *fmt, ...);
 void random_hex(char *dst, int len);
+void hp_init_fake_tokens(void);
 
 /* hp_skip, 매크로로 정의 */
 // 인자로 문장(stmt)을 넣으면 decoy가 아닐 때만 그 문장을 실행한다
